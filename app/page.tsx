@@ -8,6 +8,8 @@ import {
   getTodayExerciseCount,
   getExerciseTypeStats,
   getMonthActivityMap,
+  getSessionInsights,
+  getPersonalizedExercise,
   type UserState,
   type CBTExercise,
 } from "@/lib/store"
@@ -19,6 +21,7 @@ import ActivityGrid from "@/components/activity-grid"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import Link from "next/link"
 import { TreePine, Sprout, ChevronLeft, ChevronRight, Maximize2 } from "lucide-react"
+import TranscriptUpload from "@/components/transcript-upload"
 
 const levelNames = [
   "",
@@ -56,7 +59,9 @@ export default function Home() {
   }, [loadState])
 
   function handleStartExercise(exercise: CBTExercise) {
-    setActiveExercise(exercise)
+    const insights = getSessionInsights()
+    const personalized = getPersonalizedExercise(exercise, insights)
+    setActiveExercise(personalized)
     setDialogOpen(true)
   }
 
@@ -94,11 +99,14 @@ export default function Home() {
               MindGrove
             </h1>
           </div>
-          <div className="text-right">
-            <p className="text-xs text-muted-foreground uppercase tracking-wider">
-              Level {state.level}
-            </p>
-            <p className="text-sm font-medium text-foreground">{levelName}</p>
+          <div className="flex items-center gap-2">
+            <TranscriptUpload />
+            <div className="text-right">
+              <p className="text-xs text-muted-foreground uppercase tracking-wider">
+                Level {state.level}
+              </p>
+              <p className="text-sm font-medium text-foreground">{levelName}</p>
+            </div>
           </div>
         </div>
       </header>
