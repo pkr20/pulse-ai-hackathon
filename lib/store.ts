@@ -418,6 +418,7 @@ export function getAllGratitudeWords(): string[] {
     if (ex.exerciseType === "gratitude") {
       // Each response might be comma-separated tags
       for (const r of ex.responses) {
+        if (typeof r !== "string") continue
         r.split(",")
           .map((w) => w.trim().toLowerCase())
           .filter(Boolean)
