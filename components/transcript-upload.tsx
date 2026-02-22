@@ -177,8 +177,18 @@ export default function TranscriptUpload({ onInsightsChange }: TranscriptUploadP
                   Current personalization
                 </p>
                 <p className="text-sm text-muted-foreground italic">
-                  &quot;{insights.personalizedContext}&quot;
+                  &quot;Last time you felt {insights.checkIn}. How much now?&quot;
                 </p>
+                {insights.spotTheDistortionThought && (
+                  <p className="text-xs text-muted-foreground">
+                    Spot the Distortion: &quot;{insights.spotTheDistortionThought}&quot;
+                  </p>
+                )}
+                {insights.personalizedOptions && (
+                  <p className="text-xs text-muted-foreground">
+                    All exercises will use options from your session.
+                  </p>
+                )}
                 {insights.emotions.length > 0 && (
                   <p className="text-xs text-muted-foreground">
                     Emotions: {insights.emotions.join(", ")}

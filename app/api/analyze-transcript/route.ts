@@ -28,13 +28,28 @@ export async function POST(req: Request) {
       messages: [
         {
           role: "system",
-          content: `You are a supportive mental health assistant. Analyze therapy or coaching session transcripts to extract insights that can personalize CBT (cognitive behavioral therapy) exercises.
+          content: `You are a supportive mental health assistant. Analyze therapy or coaching session transcripts to extract insights that personalize CBT exercises. Use ONLY what the client said or implied. Keep options short (2-6 words each). Use simple words.
 
-Return a JSON object with exactly these fields:
-- summary: A 1-2 sentence summary of the session
-- emotions: Array of 2-5 emotions or feelings mentioned (e.g. ["anxious", "overwhelmed", "hopeful"])
-- themes: Array of 2-4 themes or topics (e.g. ["work stress", "relationship", "self-criticism"])
-- personalizedContext: A 1-2 sentence context that will be prepended to CBT exercise prompts. Write in second person, past tense. Example: "Based on your last session, you've been feeling anxious lately about work deadlines." This should feel warm and specific to the transcript.`,
+Return a JSON object with these fields:
+- summary: 1-2 sentence summary
+- emotions: 2-5 emotions (e.g. ["anxious", "sad", "hopeful"])
+- themes: 2-4 themes (e.g. ["work", "family", "self-doubt"])
+- checkIn: "[emotion] about [topic]" - 3-5 words (e.g. "nervous about work")
+- spotTheDistortionThought: A thought the client said, 5-12 words, use their words
+- personalizedOptions: Object with options FROM THE TRANSCRIPT for exercises:
+  - situations: 3-5 situations/events the client described (e.g. "Meeting with boss", "Argument with partner")
+  - thoughts: 3-5 negative thoughts they expressed (e.g. "I'm not good enough", "They don't like me")
+  - supportingFacts: 2-4 things that support their negative thought (from what they said)
+  - opposingFacts: 2-4 things that go against it (from session)
+  - kinderThoughts: 3-5 kinder ways to think (based on session)
+  - friendAdvice: 3-5 things you'd tell a friend in their situation
+  - activities: 3-5 activities they put off or discussed (e.g. "Exercise", "Calling mom")
+  - smallSteps: 2-4 small steps they could take (from session)
+  - whenOptions: 2-4 when they might do it (e.g. "Tomorrow morning", "This weekend")
+  - howFeelNow: 3-5 ways they might feel (e.g. "Calm", "A bit better", "Still worried")
+  - addThoughts: 2-4 short follow-up options (e.g. "I want to work on this", "Feeling better")
+
+If the transcript doesn't clearly provide something, use 2-3 sensible options based on themes. Always provide arrays, never leave empty.`,
         },
         {
           role: "user",
@@ -53,16 +68,34 @@ Return a JSON object with exactly these fields:
       summary?: string
       emotions?: string[]
       themes?: string[]
-      personalizedContext?: string
+      checkIn?: string
+      spotTheDistortionThought?: string
+      personalizedOptions?: {
+        situations?: string[]
+        thoughts?: string[]
+        supportingFacts?: string[]
+        opposingFacts?: string[]
+        kinderThoughts?: string[]
+        friendAdvice?: string[]
+        activities?: string[]
+        smallSteps?: string[]
+        whenOptions?: string[]
+        howFeelNow?: string[]
+        addThoughts?: string[]
+      }
     }
 
     const insights: SessionInsights = {
       summary: parsed.summary ?? "Session analyzed.",
       emotions: Array.isArray(parsed.emotions) ? parsed.emotions : [],
       themes: Array.isArray(parsed.themes) ? parsed.themes : [],
-      personalizedContext:
-        parsed.personalizedContext ??
-        "Based on your last session, here's a reflection question for you.",
+      checkIn:
+        parsed.checkIn ??
+        (parsed.emotions?.[0] && parsed.themes?.[0]
+          ? `${parsed.emotions[0]} about ${parsed.themes[0]}`
+          : "reflective about your week"),
+      spotTheDistortionThought: parsed.spotTheDistortionThought?.trim() || undefined,
+      personalizedOptions: parsed.personalizedOptions,
     }
 
     return NextResponse.json(insights)

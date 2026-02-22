@@ -101,8 +101,8 @@ export default function BreathingExercise({
       {finished ? (
         <TreeGrowAnimation
           treeType="willow"
-          label="Tree planted"
-          sublabel={`${targetRounds} rounds completed`}
+          label="Done"
+          sublabel={`${targetRounds} rounds done`}
         />
       ) : (
         <>
@@ -162,7 +162,7 @@ export default function BreathingExercise({
           {/* Round counter */}
           <div className="flex items-center gap-3">
             <span className="text-xs text-muted-foreground">
-              {roundCount} / {targetRounds} rounds
+              Round {roundCount} of {targetRounds}
             </span>
             <div className="h-1.5 w-32 rounded-full bg-muted overflow-hidden">
               <div

@@ -9,22 +9,11 @@ const PRESET_TAGS = [
   "Family",
   "Friends",
   "Health",
-  "Nature",
-  "Music",
+  "Home",
   "Food",
   "Sleep",
-  "Home",
-  "Work",
-  "Laughter",
-  "Sunshine",
+  "Nature",
   "Pets",
-  "Books",
-  "Exercise",
-  "Coffee",
-  "Kindness",
-  "Memories",
-  "Learning",
-  "Peace",
   "Love",
 ]
 
@@ -105,7 +94,7 @@ export default function GratitudeExercise({ onComplete }: GratitudeExerciseProps
           value={customInput}
           onChange={(e) => setCustomInput(e.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder="Add your own..."
+          placeholder="Add your own"
           className="h-8 text-sm bg-muted/30 border-border"
         />
         <Button
@@ -126,9 +115,7 @@ export default function GratitudeExercise({ onComplete }: GratitudeExerciseProps
         size="sm"
         className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
       >
-        {canComplete
-          ? `Continue with ${selected.length} item${selected.length !== 1 ? "s" : ""}`
-          : "Select at least 1 thing"}
+        {canComplete ? "Continue" : "Pick 1 or more"}
       </Button>
     </div>
   )
