@@ -14,7 +14,21 @@ export interface CBTExercise {
   title: string
   description: string
   prompts: string[]
+<<<<<<< Updated upstream
+=======
+  /** Options for each prompt - when set, show buttons instead of textarea */
+  promptOptions?: string[][]
+  /** When set, prepend to prompts (e.g. "Based on your last session, ") */
+  promptPrefix?: string
+  dailyLifeExample: string[]
+  reflectionPrompt: string
+  reflectionOptions: string[]
+>>>>>>> Stashed changes
   treeReward: TreeType
+  /** When set, shows a check-in step first: "Based on your last session you felt X. How much do you feel like this now?" with 1-5 scale */
+  personalizedCheckIn?: { text: string }
+  /** When set for Spot the Distortion, uses custom flow: thought → distortion → feel same/better → add thoughts */
+  spotTheDistortionFlow?: { thought: string; addThoughtsOptions?: string[] }
 }
 
 export type TreeType = "oak" | "pine" | "cherry" | "birch" | "willow" | "maple"
@@ -48,12 +62,30 @@ export interface UserState {
   fertilizer: number
 }
 
+/** Transcript-based options to personalize exercises - all from the session */
+export interface PersonalizedOptions {
+  situations?: string[]      // What happened - from transcript (3-5)
+  thoughts?: string[]       // Negative thoughts expressed (3-5)
+  supportingFacts?: string[] // Facts that support the thought (2-4)
+  opposingFacts?: string[]   // Facts that go against it (2-4)
+  kinderThoughts?: string[]  // Kinder reframes (3-5)
+  friendAdvice?: string[]    // What to tell a friend (3-5)
+  activities?: string[]      // Activities put off or discussed (3-5)
+  smallSteps?: string[]      // Small steps mentioned (2-4)
+  whenOptions?: string[]     // When to do it (2-4)
+  howFeelNow?: string[]      // How they feel now (3-5)
+  addThoughts?: string[]     // For Spot the Distortion step 3 (2-4)
+}
+
 /** Session insights from transcript analysis - used to personalize exercise prompts */
 export interface SessionInsights {
   summary: string
   emotions: string[]
   themes: string[]
-  personalizedContext: string
+  checkIn: string
+  spotTheDistortionThought?: string
+  /** Options derived from transcript - used to personalize all exercises */
+  personalizedOptions?: PersonalizedOptions
 }
 
 const STORAGE_KEY = "mindgrove-state"
@@ -194,76 +226,190 @@ export const exercises: CBTExercise[] = [
     id: "thought-record-1",
     type: "thought-record",
     title: "Thought Record",
-    description: "Challenge negative thoughts with evidence.",
+    description: "Look at your thoughts in a new way.",
     prompts: [
-      "What situation triggered this thought?",
-      "What automatic thought came to mind?",
-      "What emotions did you feel? (Rate intensity 1-10)",
-      "What evidence supports this thought?",
-      "What evidence goes against this thought?",
-      "What is a more balanced thought?",
+      "What happened?",
+      "What did you think?",
+      "How did you feel?",
+      "What is one fact that supports this thought?",
+      "What is one fact that goes against it?",
+      "What is a kinder way to think about it?",
     ],
+    promptOptions: [
+      ["Work mistake", "Argument", "Something didn't go my way", "I felt left out", "I was alone"],
+      ["I'm not good enough", "They don't like me", "Something bad will happen", "It's my fault", "I can't do it"],
+      ["1 - Very bad", "2", "3", "4", "5 - Okay"],
+      ["It happened before", "Someone said so", "I saw it", "I feel it's true"],
+      ["Someone said otherwise", "It worked before", "I'm not sure"],
+      ["I'm doing my best", "It's okay to make mistakes", "I can learn", "One thing doesn't mean everything"],
+    ],
+<<<<<<< Updated upstream
+=======
+    dailyLifeExample: [
+      "When you make a mistake.",
+      "When you think 'I'm not good at this.'",
+      "Use this to see the facts.",
+    ],
+    reflectionPrompt: "When will you try this today?",
+    reflectionOptions: [
+      "If I make a mistake.",
+      "When I feel stressed.",
+      "When I finish work.",
+    ],
+>>>>>>> Stashed changes
     treeReward: "oak",
   },
   {
     id: "cognitive-distortion-1",
     type: "cognitive-distortion",
     title: "Spot the Distortion",
-    description: "Identify distortions in your thinking.",
+    description: "Find unhelpful thinking patterns.",
     prompts: [
-      "Describe a recent negative thought you had.",
-      "Which distortion might this be? (All-or-nothing, catastrophizing, mind-reading, fortune-telling, personalization, etc.)",
-      "Why do you think this is a distortion rather than a fact?",
-      "How would you advise a friend who had this same thought?",
+      "What thought bothered you?",
+      "Which one fits?",
+      "Is it a fact or a guess?",
+      "What would you tell a friend?",
     ],
+    promptOptions: [
+      ["I'm not good enough", "They don't like me", "Something bad will happen", "It's my fault", "I can't do it"],
+      ["All or nothing", "Thinking the worst", "Guessing what others think", "Blaming yourself"],
+      ["Fact", "Guess"],
+      ["You're doing your best", "It's not your fault", "Don't worry", "Try again"],
+    ],
+<<<<<<< Updated upstream
+=======
+    dailyLifeExample: [
+      "When a friend doesn't text back.",
+      "When you think 'They are mad at me.'",
+      "Use this to stop guessing.",
+    ],
+    reflectionPrompt: "What will you watch for tomorrow?",
+    reflectionOptions: [
+      "Guessing what others think.",
+      "Thinking the worst.",
+      "Blaming myself.",
+    ],
+>>>>>>> Stashed changes
     treeReward: "pine",
   },
   {
     id: "behavioral-activation-1",
     type: "behavioral-activation",
     title: "Activity Planning",
-    description: "Plan activities to boost your mood.",
+    description: "Plan one thing to do.",
     prompts: [
-      "What activity have you been avoiding or putting off?",
-      "On a scale of 1-10, how much pleasure or accomplishment might this bring?",
-      "What is the smallest first step you could take?",
-      "When will you take this step? Be specific.",
+      "What have you put off?",
+      "How good would it feel?",
+      "What is one small step?",
+      "When will you do it?",
     ],
+    promptOptions: [
+      ["Chores", "Exercise", "Calling someone", "Work task", "Going out"],
+      ["1 - Not much", "2", "3", "4", "5 - A lot"],
+      ["Do 5 minutes", "Just start", "Ask for help", "Break it down"],
+      ["Today", "Tomorrow morning", "Tomorrow afternoon", "This week"],
+    ],
+<<<<<<< Updated upstream
+=======
+    dailyLifeExample: [
+      "When you have chores.",
+      "When you feel like doing nothing.",
+      "Use this to start small.",
+    ],
+    reflectionPrompt: "What will you do tonight?",
+    reflectionOptions: [
+      "Finishing one task.",
+      "Going for a walk.",
+      "Calling a friend.",
+    ],
+>>>>>>> Stashed changes
     treeReward: "cherry",
   },
   {
     id: "gratitude-1",
     type: "gratitude",
     title: "Gratitude Journal",
-    description: "Notice what's going well in your life.",
+    description: "Notice what's good today.",
     prompts: [
-      "Pick or type what you're grateful for today.",
-      "Your gratitude word cloud so far.",
+      "What are you grateful for?",
+      "Your gratitude words so far.",
     ],
+<<<<<<< Updated upstream
+=======
+    dailyLifeExample: [
+      "On a busy day.",
+      "When someone says thank you.",
+      "Use this to see good things.",
+    ],
+    reflectionPrompt: "Who would you tell?",
+    reflectionOptions: [
+      "Family.",
+      "A friend.",
+      "Just me.",
+    ],
+>>>>>>> Stashed changes
     treeReward: "birch",
   },
   {
     id: "breathing-1",
     type: "breathing",
     title: "Mindful Breathing",
-    description: "Calm your mind with focused breathing.",
+    description: "Calm down with breathing.",
     prompts: [
-      "Follow the box: 4s breathe in, 4s hold, 4s breathe out, 4s hold.",
-      "How do you feel now? What did you notice?",
+      "Follow the box: breathe in, hold, breathe out, hold.",
+      "How do you feel now?",
     ],
+    promptOptions: [
+      [], // breathing animation - no options
+      ["Calm", "A bit better", "Same", "More relaxed", "Tired"],
+    ],
+<<<<<<< Updated upstream
+=======
+    dailyLifeExample: [
+      "Before something scary.",
+      "When you wait in line.",
+      "Use this to calm down.",
+    ],
+    reflectionPrompt: "Where can you breathe today?",
+    reflectionOptions: [
+      "In my chair.",
+      "Outside.",
+      "Before bed.",
+    ],
+>>>>>>> Stashed changes
     treeReward: "willow",
   },
   {
     id: "reframing-1",
     type: "reframing",
-    title: "Cognitive Reframing",
-    description: "Rewrite unhelpful thoughts constructively.",
+    title: "Kind Thoughts",
+    description: "Change a thought to be kinder.",
     prompts: [
-      "What negative thought keeps coming back to you?",
-      "What would you say to a loved one who had this thought?",
-      "Write a reframed version of this thought that is kind but realistic.",
-      "How does the reframed thought make you feel compared to the original?",
+      "What thought bothers you?",
+      "What would you tell a friend?",
+      "What is a kinder way to think it?",
+      "How does that feel?",
     ],
+    promptOptions: [
+      ["I'm not good enough", "They don't like me", "Something bad will happen", "It's my fault", "I can't do it"],
+      ["You're doing your best", "It's not your fault", "Don't worry", "Try again"],
+      ["I'm doing my best", "It's okay to make mistakes", "I can learn", "One thing doesn't mean everything"],
+      ["Better", "A bit better", "Same", "Relief"],
+    ],
+<<<<<<< Updated upstream
+=======
+    dailyLifeExample: [
+      "When you feel bad about yourself.",
+      "When you think 'I look tired.'",
+      "Use this to be kind to yourself.",
+    ],
+    reflectionPrompt: "What will you tell yourself tomorrow?",
+    reflectionOptions: [
+      "I am doing my best.",
+      "I am a good person.",
+      "It is okay to be tired.",
+    ],
+>>>>>>> Stashed changes
     treeReward: "maple",
   },
 ]
@@ -364,15 +510,107 @@ export function clearSessionInsights(): void {
   localStorage.removeItem(SESSION_INSIGHTS_KEY)
 }
 
-/** Returns an exercise with prompts personalized using session insights when available */
+const DISTORTION_TYPES = [
+  "All or nothing",
+  "Thinking the worst",
+  "Guessing what others think",
+  "Blaming yourself",
+] as const
+
+/** Returns an exercise with transcript-based personalization when session insights are available */
 export function getPersonalizedExercise(
   exercise: CBTExercise,
   sessionInsights: SessionInsights | null
 ): CBTExercise {
-  if (!sessionInsights?.personalizedContext) return exercise
-  const prefix = `${sessionInsights.personalizedContext}\n\n`
-  return {
-    ...exercise,
-    prompts: exercise.prompts.map((p) => prefix + p),
+  if (!sessionInsights) return exercise
+
+  const result: CBTExercise = { ...exercise }
+  const opts = sessionInsights.personalizedOptions
+
+  if (exercise.type === "cognitive-distortion" && sessionInsights.checkIn) {
+    result.personalizedCheckIn = {
+      text: `Last time you felt ${sessionInsights.checkIn}. How much now?`,
+    }
+  }
+
+  if (exercise.type === "cognitive-distortion" && (sessionInsights.summary || sessionInsights.themes?.length)) {
+    result.promptPrefix = "Based on your last session, "
+  }
+
+  if (
+    exercise.type === "cognitive-distortion" &&
+    sessionInsights.spotTheDistortionThought
+  ) {
+    result.spotTheDistortionFlow = {
+      thought: sessionInsights.spotTheDistortionThought,
+      addThoughtsOptions: opts?.addThoughts ?? [
+        "I want to work on this",
+        "I feel a bit better",
+        "No more thoughts",
+      ],
+    }
+  }
+
+  if (opts && exercise.type !== "gratitude") {
+    const built = buildPersonalizedPromptOptions(exercise.type, opts, exercise.promptOptions)
+    if (built.some((arr) => arr.length > 0)) {
+      result.promptOptions = built
+    }
+  }
+
+  return result
+}
+
+function pickOpts<T>(from: T[] | undefined, fallback: T[] | undefined): T[] {
+  const arr = from ?? fallback ?? []
+  return arr.length > 0 ? arr : (fallback ?? [])
+}
+
+function buildPersonalizedPromptOptions(
+  type: CBTExerciseType,
+  opts: PersonalizedOptions,
+  fallback: string[][] | undefined
+): string[][] {
+  const def = fallback ?? []
+  switch (type) {
+    case "thought-record":
+      return [
+        pickOpts(opts.situations, def[0]),
+        pickOpts(opts.thoughts, def[1]),
+        def[2]?.length ? def[2] : ["1 - Very bad", "2", "3", "4", "5 - Okay"],
+        pickOpts(opts.supportingFacts, def[3]),
+        pickOpts(opts.opposingFacts, def[4]),
+        pickOpts(opts.kinderThoughts, def[5]),
+      ]
+    case "cognitive-distortion":
+      return [
+        pickOpts(opts.thoughts, def[0]),
+        pickOpts(def[1], [["All or nothing", "Thinking the worst", "Guessing what others think", "Blaming yourself"]]),
+        pickOpts(def[2], [["Fact", "Guess"]]),
+        pickOpts(opts.friendAdvice, def[3]),
+      ]
+    case "behavioral-activation":
+      return [
+        pickOpts(opts.activities, def[0]),
+        pickOpts(def[1], [["1 - Not much", "2", "3", "4", "5 - A lot"]]),
+        pickOpts(opts.smallSteps, def[2]),
+        pickOpts(opts.whenOptions, def[3]),
+      ]
+    case "breathing":
+      return [
+        [],
+        pickOpts(opts.howFeelNow, def[1] ?? ["Calm", "A bit better", "Same", "More relaxed", "Tired"]),
+      ]
+    case "reframing":
+      return [
+        pickOpts(opts.thoughts, def[0]),
+        pickOpts(opts.friendAdvice, def[1]),
+        pickOpts(opts.kinderThoughts, def[2]),
+        pickOpts(opts.howFeelNow, def[3] ?? ["Better", "A bit better", "Same", "Relief"]),
+      ]
+    default:
+      return def
   }
 }
+
+export { DISTORTION_TYPES }
