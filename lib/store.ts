@@ -14,6 +14,9 @@ export interface CBTExercise {
   title: string
   description: string
   prompts: string[]
+  dailyLifeExample: string[]
+  reflectionPrompt: string
+  reflectionOptions: string[]
   treeReward: TreeType
 }
 
@@ -102,7 +105,7 @@ function calculateStreak(lastPracticeDate: string | null, currentStreak: number)
   const last = new Date(lastPracticeDate)
   const now = new Date()
   const diffDays = Math.floor((now.getTime() - last.getTime()) / (1000 * 60 * 60 * 24))
-  
+
   if (diffDays === 0) return currentStreak // Same day
   if (diffDays === 1) return currentStreak + 1 // Consecutive day
   return 1 // Streak broken
@@ -114,14 +117,14 @@ function getTreePosition(existingTrees: Tree[]): { x: number; y: number } {
   for (let i = 0; i < maxAttempts; i++) {
     const x = 5 + Math.random() * 90
     const y = 20 + Math.random() * 65
-    
+
     // Check minimum distance from existing trees
     const tooClose = existingTrees.some((tree) => {
       const dx = tree.x - x
       const dy = tree.y - y
       return Math.sqrt(dx * dx + dy * dy) < 8
     })
-    
+
     if (!tooClose) return { x, y }
   }
   return { x: 5 + Math.random() * 90, y: 20 + Math.random() * 65 }
@@ -141,7 +144,7 @@ export function completeExercise(
   const typeCount = state.completedExercises.filter(
     (e) => e.exerciseType === exerciseType
   ).length
-  
+
   const position = getTreePosition(state.trees)
 
   const newTree: Tree = {
@@ -193,6 +196,18 @@ export const exercises: CBTExercise[] = [
       "What evidence goes against this thought?",
       "What is a more balanced thought?",
     ],
+    dailyLifeExample: [
+      "When you make a mistake at work.",
+      "When you think 'I'm not good at this.'",
+      "Use this to find the real facts.",
+    ],
+    reflectionPrompt: "When is the best time for you to use this today?",
+    reflectionOptions: [
+      "If I make a mistake later.",
+      "When I feel overwhelmed.",
+      "During my lunch break.",
+      "When I finish my work.",
+    ],
     treeReward: "oak",
   },
   {
@@ -205,6 +220,18 @@ export const exercises: CBTExercise[] = [
       "Which distortion might this be? (All-or-nothing, catastrophizing, mind-reading, fortune-telling, personalization, etc.)",
       "Why do you think this is a distortion rather than a fact?",
       "How would you advise a friend who had this same thought?",
+    ],
+    dailyLifeExample: [
+      "When a friend doesn't text back.",
+      "When you think 'They are mad at me.'",
+      "Use this to stop guessing feelings.",
+    ],
+    reflectionPrompt: "Which 'mental trap' is your biggest challenge tomorrow?",
+    reflectionOptions: [
+      "Guessing what others think.",
+      "Thinking the worst will happen.",
+      "Thinking in 'good' or 'bad' only.",
+      "Taking things too personally.",
     ],
     treeReward: "pine",
   },
@@ -219,6 +246,18 @@ export const exercises: CBTExercise[] = [
       "What is the smallest first step you could take?",
       "When will you take this step? Be specific.",
     ],
+    dailyLifeExample: [
+      "When you have chores to do.",
+      "When you feel like doing nothing.",
+      "Use this to start with one tiny step.",
+    ],
+    reflectionPrompt: "Which small win would make you feel happiest tonight?",
+    reflectionOptions: [
+      "Finishing a small task.",
+      "Going for a short walk.",
+      "Calling a friend.",
+      "Relaxing with a book.",
+    ],
     treeReward: "cherry",
   },
   {
@@ -230,6 +269,18 @@ export const exercises: CBTExercise[] = [
       "Pick or type what you're grateful for today.",
       "Your gratitude word cloud so far.",
     ],
+    dailyLifeExample: [
+      "During a very busy day.",
+      "When someone says 'thank you.'",
+      "Use this to see the good things.",
+    ],
+    reflectionPrompt: "Who would you like to share a happy moment with?",
+    reflectionOptions: [
+      "My family or partner.",
+      "A close friend.",
+      "A coworker.",
+      "Just keeping it for myself.",
+    ],
     treeReward: "birch",
   },
   {
@@ -240,6 +291,18 @@ export const exercises: CBTExercise[] = [
     prompts: [
       "Follow the box: 4s breathe in, 4s hold, 4s breathe out, 4s hold.",
       "How do you feel now? What did you notice?",
+    ],
+    dailyLifeExample: [
+      "Before a scary meeting.",
+      "When stuck in a long line.",
+      "Use this to calm your body fast.",
+    ],
+    reflectionPrompt: "Where is a quiet place you can breathe today?",
+    reflectionOptions: [
+      "In my car or on the bus.",
+      "In my favorite chair.",
+      "Outside in the fresh air.",
+      "Right before I go to sleep.",
     ],
     treeReward: "willow",
   },
@@ -253,6 +316,18 @@ export const exercises: CBTExercise[] = [
       "What would you say to a loved one who had this thought?",
       "Write a reframed version of this thought that is kind but realistic.",
       "How does the reframed thought make you feel compared to the original?",
+    ],
+    dailyLifeExample: [
+      "When you feel bad about yourself.",
+      "When you think 'I look tired.'",
+      "Use this to be kind to yourself.",
+    ],
+    reflectionPrompt: "What kind word will you say to yourself tomorrow?",
+    reflectionOptions: [
+      "I am doing my best.",
+      "I am a good person.",
+      "It is okay to be tired.",
+      "I am proud of my work.",
     ],
     treeReward: "maple",
   },
