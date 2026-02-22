@@ -20,7 +20,7 @@ import StatsPanel from "@/components/stats-panel"
 import ActivityGrid from "@/components/activity-grid"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import Link from "next/link"
-import { TreePine, Sprout, ChevronLeft, ChevronRight, Maximize2 } from "lucide-react"
+import { TreePine, Sprout, ChevronLeft, ChevronRight, Maximize2, Stethoscope } from "lucide-react"
 import TranscriptUpload from "@/components/transcript-upload"
 
 const levelNames = [
@@ -103,7 +103,13 @@ export default function Home() {
             </h1>
           </div>
           <div className="flex items-center gap-2">
-            <TranscriptUpload onInsightsChange={() => setSessionInsights(getSessionInsights())} />
+            <Link
+              href="/therapist"
+              className="flex items-center gap-1.5 rounded-lg border border-border/40 px-2.5 py-1.5 text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
+            >
+              <Stethoscope className="h-3.5 w-3.5" />
+              Therapist
+            </Link>
             <div className="text-right">
               <p className="text-xs text-muted-foreground uppercase tracking-wider">
                 Level {state.level}

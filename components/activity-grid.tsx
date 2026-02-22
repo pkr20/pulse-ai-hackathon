@@ -6,6 +6,8 @@ import { ChevronLeft, ChevronRight, Flame } from "lucide-react"
 interface ActivityGridProps {
   activityMap: Record<string, number>
   streak: number
+  /** When false, only real data is shown (no placeholder/fake data) */
+  useFakeData?: boolean
 }
 
 function getIntensity(count: number): number {
@@ -57,10 +59,13 @@ function generateFakeData(): Record<string, number> {
 const FAKE_DATA = generateFakeData()
 const DAY_LABELS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
 
-export default function ActivityGrid({ activityMap, streak }: ActivityGridProps) {
+export default function ActivityGrid({ activityMap, streak, useFakeData = true }: ActivityGridProps) {
   const now = new Date()
   const todayStr = toDateStr(now)
-  const mergedMap = useMemo(() => ({ ...FAKE_DATA, ...activityMap }), [activityMap])
+  const mergedMap = useMemo(
+    () => (useFakeData ? { ...FAKE_DATA, ...activityMap } : activityMap),
+    [activityMap, useFakeData]
+  )
 
   const [viewMonth, setViewMonth] = useState(now.getMonth())
   const [viewYear, setViewYear] = useState(now.getFullYear())
