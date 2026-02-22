@@ -1,7 +1,7 @@
 "use client"
 
-import { useState, useCallback } from "react"
-import { FileText, Upload, Loader2, Trash2, Sparkles } from "lucide-react"
+import { useState, useCallback, useRef, useEffect } from "react"
+import { FileText, Upload, Loader2, Trash2, Sparkles, Mic, Square } from "lucide-react"
 import {
   Sheet,
   SheetContent,
@@ -31,6 +31,23 @@ export default function TranscriptUpload({ onInsightsChange }: TranscriptUploadP
   const [insights, setInsightsState] = useState<SessionInsights | null>(() =>
     getSessionInsights()
   )
+  const [isRecording, setIsRecording] = useState(false)
+  const [transcribing, setTranscribing] = useState(false)
+  const [recordingMode, setRecordingMode] = useState<"live" | "audio" | null>(null)
+  const recognitionRef = useRef<SpeechRecognition | null>(null)
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null)
+
+  const SpeechRecognitionAPI =
+    typeof window !== "undefined"
+      ? (window.SpeechRecognition || (window as unknown as { webkitSpeechRecognition?: typeof SpeechRecognition }).webkitSpeechRecognition)
+      : null
+
+  useEffect(() => {
+    return () => {
+      recognitionRef.current?.abort()
+      mediaRecorderRef.current?.stop()
+    }
+  }, [])
 
   const refreshInsights = useCallback(() => {
     const next = getSessionInsights()
@@ -88,6 +105,117 @@ export default function TranscriptUpload({ onInsightsChange }: TranscriptUploadP
     reader.readAsText(file)
   }
 
+  function handleStartRecording() {
+    if (!SpeechRecognitionAPI) {
+      setError("Speech recognition is not supported in this browser. Try Chrome or Edge.")
+      return
+    }
+    setError(null)
+    const recognition = new SpeechRecognitionAPI()
+    recognition.continuous = true
+    recognition.interimResults = true
+    recognition.lang = "en-US"
+
+    recognition.onresult = (event: SpeechRecognitionEvent) => {
+      let final = ""
+      let interim = ""
+      for (let i = event.resultIndex; i < event.results.length; i++) {
+        const result = event.results[i]
+        const text = result[0].transcript
+        if (result.isFinal) {
+          final += text
+        } else {
+          interim += text
+        }
+      }
+      if (final) {
+        setTranscript((prev) => (prev ? `${prev} ${final}` : final))
+      }
+    }
+
+    recognition.onerror = (event: SpeechRecognitionErrorEvent) => {
+      if (event.error === "not-allowed") {
+        setError("Microphone access was denied.")
+      } else if (event.error !== "aborted") {
+        setError(`Recognition error: ${event.error}`)
+      }
+      setIsRecording(false)
+    }
+
+    recognition.onend = () => {
+      setRecordingMode(null)
+      setIsRecording(false)
+    }
+
+    recognitionRef.current = recognition
+    recognition.start()
+    setIsRecording(true)
+    setRecordingMode("live")
+  }
+
+  function handleStopRecording() {
+    if (recordingMode === "live") {
+      recognitionRef.current?.abort()
+      recognitionRef.current = null
+    } else if (recordingMode === "audio") {
+      mediaRecorderRef.current?.stop()
+      mediaRecorderRef.current = null
+    }
+    setRecordingMode(null)
+    setIsRecording(false)
+  }
+
+  async function handleRecordAudio() {
+    if (!navigator.mediaDevices?.getUserMedia) {
+      setError("Microphone access is not available.")
+      return
+    }
+    setError(null)
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+      const mediaRecorder = new MediaRecorder(stream)
+      const chunks: Blob[] = []
+
+      mediaRecorder.ondataavailable = (e) => {
+        if (e.data.size > 0) chunks.push(e.data)
+      }
+
+      const recordingPromise = new Promise<Blob>((resolve) => {
+        mediaRecorder.onstop = () => {
+          stream.getTracks().forEach((t) => t.stop())
+          resolve(new Blob(chunks, { type: "audio/webm" }))
+        }
+      })
+
+      mediaRecorder.start()
+      mediaRecorderRef.current = mediaRecorder
+      setIsRecording(true)
+      setRecordingMode("audio")
+
+      const blob = await recordingPromise
+      mediaRecorderRef.current = null
+      setRecordingMode(null)
+      setIsRecording(false)
+      setTranscribing(true)
+
+      const formData = new FormData()
+      formData.append("audio", blob, "recording.webm")
+
+      const res = await fetch("/api/transcribe-audio", {
+        method: "POST",
+        body: formData,
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error ?? "Transcription failed")
+      setTranscript((prev) => (prev ? `${prev}\n\n${data.transcript}` : data.transcript))
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Recording failed")
+    } finally {
+      setTranscribing(false)
+      setIsRecording(false)
+    }
+  }
+
   return (
     <>
       <Sheet open={open} onOpenChange={setOpen}>
@@ -104,7 +232,7 @@ export default function TranscriptUpload({ onInsightsChange }: TranscriptUploadP
               Upload Session Transcript
             </SheetTitle>
             <SheetDescription>
-              Paste or upload a therapy/coaching transcript. We&apos;ll analyze it and
+              Paste, upload, or record a therapy/coaching transcript. We&apos;ll analyze it and
               personalize your CBT exercises (e.g. &quot;Based on your last session,
               you&apos;ve been feeling anxious lately...&quot;).
             </SheetDescription>
@@ -122,7 +250,7 @@ export default function TranscriptUpload({ onInsightsChange }: TranscriptUploadP
                 className="min-h-[180px] max-h-[300px] resize-none overflow-y-auto"
                 disabled={loading}
               />
-              <div className="mt-2 flex gap-2">
+              <div className="mt-2 flex flex-wrap gap-2">
                 <input
                   type="file"
                   id="transcript-file"
@@ -144,7 +272,52 @@ export default function TranscriptUpload({ onInsightsChange }: TranscriptUploadP
                     Upload .txt
                   </label>
                 </Button>
+                {isRecording ? (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleStopRecording}
+                    className="gap-1.5 text-destructive border-destructive/50 hover:bg-destructive/10"
+                  >
+                    <Square className="h-4 w-4 fill-current" />
+                    Stop
+                  </Button>
+                ) : SpeechRecognitionAPI && !transcribing ? (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleStartRecording}
+                    disabled={loading}
+                    className="gap-1.5"
+                  >
+                    <Mic className="h-4 w-4" />
+                    Record (live)
+                  </Button>
+                ) : null}
+                {transcribing ? (
+                  <span className="text-xs text-muted-foreground self-center flex items-center gap-1.5">
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                    Transcribing...
+                  </span>
+                ) : !isRecording ? (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleRecordAudio}
+                    disabled={loading}
+                    className="gap-1.5"
+                  >
+                    <Mic className="h-4 w-4" />
+                    Record audio
+                  </Button>
+                ) : null}
               </div>
+              {(isRecording || transcribing) && (
+                <p className="mt-2 text-xs text-muted-foreground flex items-center gap-1.5">
+                  <span className="h-2 w-2 rounded-full bg-destructive animate-pulse" />
+                  {transcribing ? "Transcribing your recording..." : "Listening... speak and your words will appear above."}
+                </p>
+              )}
             </div>
 
             {error && (
