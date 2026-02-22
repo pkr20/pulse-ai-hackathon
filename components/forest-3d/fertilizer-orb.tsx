@@ -1,27 +1,17 @@
 "use client"
 
-import { useRef, useCallback } from "react"
+import { useRef } from "react"
 import { useFrame } from "@react-three/fiber"
-import { RigidBody, CapsuleCollider } from "@react-three/rapier"
 import * as THREE from "three"
 
 interface FertilizerOrbProps {
   position: [number, number, number]
-  onCollect: () => void
-  disabled?: boolean
 }
 
-export default function FertilizerOrb({ position, onCollect, disabled }: FertilizerOrbProps) {
+export default function FertilizerOrb({ position }: FertilizerOrbProps) {
   const orbRef = useRef<THREE.Mesh>(null)
   const glowRef = useRef<THREE.Mesh>(null)
   const lightRef = useRef<THREE.PointLight>(null)
-  const collected = useRef(false)
-
-  const handleIntersection = useCallback(() => {
-    if (collected.current || disabled) return
-    collected.current = true
-    onCollect()
-  }, [onCollect, disabled])
 
   useFrame((state) => {
     const t = state.clock.elapsedTime
@@ -41,10 +31,6 @@ export default function FertilizerOrb({ position, onCollect, disabled }: Fertili
 
   return (
     <group position={[position[0], 0, position[2]]}>
-      <RigidBody type="fixed" sensor onIntersectionEnter={handleIntersection}>
-        <CapsuleCollider args={[0.5, 0.8]} position={[0, 1, 0]} />
-      </RigidBody>
-
       <mesh ref={orbRef} position={[0, 0.6, 0]}>
         <dodecahedronGeometry args={[0.2, 0]} />
         <meshStandardMaterial

@@ -16,7 +16,7 @@ const ORB_COUNT = 8
 
 interface Forest3DSceneProps {
   state: UserState
-  onCollectFertilizer: (orbIndex: number) => Promise<void>
+  onCollectFertilizer: (orbIndex: number) => Promise<boolean>
   onFertilizeTree: (treeId: string) => boolean
 }
 
@@ -45,6 +45,48 @@ function generateOrbPositions(trees: Tree[], count: number): [number, number, nu
     positions.push([x, 0, z])
   }
   return positions
+}
+
+const ORB_COLLECT_RADIUS = 2.5
+
+// Proximity-based orb collection - more reliable than Rapier sensors after removing bodies
+function OrbProximityChecker({
+  playerPosRef,
+  orbPositions,
+  collectedOrbs,
+  disabled,
+  onCollectOrb,
+}: {
+  playerPosRef: React.RefObject<THREE.Vector3>
+  orbPositions: [number, number, number][]
+  collectedOrbs: Set<number>
+  disabled: boolean
+  onCollectOrb: (index: number) => void
+}) {
+  const triggeredForVisitRef = useRef<Record<number, boolean>>({})
+
+  useFrame(() => {
+    if (disabled || !playerPosRef.current) return
+    const px = playerPosRef.current.x
+    const pz = playerPosRef.current.z
+
+    for (let i = 0; i < orbPositions.length; i++) {
+      if (collectedOrbs.has(i)) continue
+      const [ox, , oz] = orbPositions[i]
+      const dist = Math.hypot(px - ox, pz - oz)
+
+      if (dist < ORB_COLLECT_RADIUS) {
+        if (!triggeredForVisitRef.current[i]) {
+          triggeredForVisitRef.current[i] = true
+          onCollectOrb(i)
+        }
+      } else {
+        triggeredForVisitRef.current[i] = false
+      }
+    }
+  })
+
+  return null
 }
 
 // Proximity checker runs inside the Canvas to use useFrame
@@ -101,6 +143,7 @@ export default function Forest3DScene({
   const playerPosRef = useRef(new THREE.Vector3(0, 0, 8))
   const nearbyTreeIdRef = useRef<string | null>(null)
   const [collectedOrbs, setCollectedOrbs] = useState<Set<number>>(new Set())
+  const [retryKeys, setRetryKeys] = useState<Record<number, number>>({})
 
   const orbPositions = useMemo(
     () => generateOrbPositions(state.trees, ORB_COUNT),
@@ -114,12 +157,18 @@ export default function Forest3DScene({
 
   const handleCollectOrb = useCallback(
     async (index: number) => {
-      await onCollectFertilizer(index)
-      setCollectedOrbs((prev) => {
-        const next = new Set(prev)
-        next.add(index)
-        return next
-      })
+      const completed = await onCollectFertilizer(index)
+      if (completed) {
+        requestAnimationFrame(() => {
+          setCollectedOrbs((prev) => {
+            const next = new Set(prev)
+            next.add(index)
+            return next
+          })
+        })
+      } else {
+        setRetryKeys((prev) => ({ ...prev, [index]: (prev[index] ?? 0) + 1 }))
+      }
     },
     [onCollectFertilizer]
   )
@@ -160,6 +209,14 @@ export default function Forest3DScene({
             onFertilizeTree={onFertilizeTree}
           />
 
+          <OrbProximityChecker
+            playerPosRef={playerPosRef}
+            orbPositions={orbPositions}
+            collectedOrbs={collectedOrbs}
+            disabled={fertilizerDialogOpen}
+            onCollectOrb={handleCollectOrb}
+          />
+
           {treePositions.map((tree) => (
             <Tree3D
               key={tree.id}
@@ -173,12 +230,7 @@ export default function Forest3DScene({
 
           {orbPositions.map((pos, i) =>
             collectedOrbs.has(i) ? null : (
-              <FertilizerOrb
-                key={i}
-                position={pos}
-                onCollect={() => handleCollectOrb(i)}
-                disabled={fertilizerDialogOpen}
-              />
+              <FertilizerOrb key={`${i}-${retryKeys[i] ?? 0}`} position={pos} />
             )
           )}
         </Physics>

@@ -166,6 +166,7 @@ export function completeExercise(
   const today = new Date().toISOString().split("T")[0]
 
   const newState: UserState = {
+    ...state,
     trees: [...state.trees, newTree],
     completedExercises: [...state.completedExercises, newExercise],
     streak: calculateStreak(state.lastPracticeDate, state.streak),

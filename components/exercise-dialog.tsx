@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import type { CBTExercise } from "@/lib/store"
+import { VisuallyHidden } from "@radix-ui/react-visually-hidden"
 import {
   Dialog,
   DialogContent,
@@ -79,6 +80,9 @@ export default function ExerciseDialog({
     return (
       <Dialog open={open} onOpenChange={handleOpen}>
         <DialogContent className="sm:max-w-md bg-card border-border">
+          <VisuallyHidden asChild>
+            <DialogTitle>A New Tree Grows</DialogTitle>
+          </VisuallyHidden>
           <div className="flex flex-col items-center gap-4 py-6 text-center">
             <TreeGrowAnimation
               treeType={exercise.treeReward}

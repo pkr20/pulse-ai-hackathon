@@ -20,7 +20,7 @@ const Forest3DScene = dynamic(() => import("@/components/forest-3d/scene"), {
   ),
 })
 
-const FERTILIZER_COST = 3
+const FERTILIZER_COST = 2
 
 export default function ForestPage() {
   const router = useRouter()
@@ -29,11 +29,17 @@ export default function ForestPage() {
   const [nearbyTree, setNearbyTree] = useState(false)
   const [fertilizerDialogOpen, setFertilizerDialogOpen] = useState(false)
   const [fertilizerExercise, setFertilizerExercise] = useState<CBTExercise | null>(null)
-  const fertilizerResolveRef = useRef<(() => void) | null>(null)
+  const fertilizerResolveRef = useRef<((completed: boolean) => void) | null>(null)
 
   useEffect(() => {
     setState(getState())
   }, [])
+
+  useEffect(() => {
+    if (!fertilizerDialogOpen) {
+      setState(getState())
+    }
+  }, [fertilizerDialogOpen])
 
   const showNotification = useCallback((msg: string) => {
     setNotification(msg)
@@ -44,7 +50,7 @@ export default function ForestPage() {
     const randomExercise = exercises[Math.floor(Math.random() * exercises.length)]
     setFertilizerExercise(randomExercise)
     setFertilizerDialogOpen(true)
-    return new Promise<void>((resolve) => {
+    return new Promise<boolean>((resolve) => {
       fertilizerResolveRef.current = resolve
     })
   }, [])
@@ -56,7 +62,7 @@ export default function ForestPage() {
       setState(newState)
       setFertilizerDialogOpen(false)
       setFertilizerExercise(null)
-      fertilizerResolveRef.current?.()
+      fertilizerResolveRef.current?.(true)
       fertilizerResolveRef.current = null
       showNotification("+1 Fertilizer")
     },
@@ -66,7 +72,7 @@ export default function ForestPage() {
   const handleFertilizerDialogClose = useCallback(() => {
     setFertilizerDialogOpen(false)
     setFertilizerExercise(null)
-    fertilizerResolveRef.current?.()
+    fertilizerResolveRef.current?.(false)
     fertilizerResolveRef.current = null
   }, [])
 
