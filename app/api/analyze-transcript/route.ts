@@ -84,8 +84,9 @@ Return a JSON object with these fields:
   Depression/low mood/negativity → gratitude (Gratitude Journal)
   Anxiety/panic/stress → breathing (Mindful Breathing)
   Avoidance/low motivation/withdrawal → behavioral-activation (Activity Planning)
+  Anxiety/panic/dissociation → grounding (5-4-3-2-1 Grounding)
   Negative self-talk/self-criticism → thought-record or reframing (Kind Thoughts)
-  Use exerciseType: "cognitive-distortion" | "gratitude" | "breathing" | "behavioral-activation" | "thought-record" | "reframing"
+  Use exerciseType: "cognitive-distortion" | "gratitude" | "breathing" | "behavioral-activation" | "grounding" | "thought-record" | "reframing"
 - personalizedOptions: Object with options FROM THE TRANSCRIPT for exercises:
   - situations: 3-5 situations/events the client described (e.g. "Meeting with boss", "Argument with partner")
   - thoughts: 3-5 negative thoughts they expressed (e.g. "I'm not good enough", "They don't like me")
@@ -140,6 +141,7 @@ If the transcript doesn't clearly provide something, use 2-3 sensible options ba
       "thought-record",
       "cognitive-distortion",
       "behavioral-activation",
+      "grounding",
       "gratitude",
       "breathing",
       "reframing",

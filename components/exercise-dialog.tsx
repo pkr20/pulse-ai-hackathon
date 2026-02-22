@@ -13,6 +13,7 @@ import {
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { Progress } from "@/components/ui/progress"
+import { WatchNotification } from "./watch-notification"
 import { ChevronLeft, ChevronRight, Check } from "lucide-react"
 import BreathingExercise from "@/components/breathing-exercise"
 import GratitudeExercise, { GratitudeWordCloud } from "@/components/gratitude-exercise"
@@ -240,6 +241,17 @@ export default function ExerciseDialog({
                   ))}
                 </ul>
               </div>
+
+              <div className="pt-2">
+                <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-widest text-center mb-1">
+                  Watch Notification Preview
+                </h4>
+                <p className="text-[10px] text-muted-foreground text-center mb-0">
+                  This is what you will see on your Apple Watch when your heart rate goes up.
+                </p>
+                <WatchNotification message={exercise.watchNotification} />
+              </div>
+
               <p className="text-sm text-muted-foreground text-center">
                 Have you felt this before?
               </p>
