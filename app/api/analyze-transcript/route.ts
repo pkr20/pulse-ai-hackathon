@@ -23,6 +23,49 @@ export async function POST(req: Request) {
       )
     }
 
+    // Step 1: Detect therapist vs client and extract client content for personalization
+    let contentForAnalysis = transcript
+    const labelingCompletion = await openai.chat.completions.create({
+      model: "gpt-4o-mini",
+      messages: [
+        {
+          role: "system",
+          content: `You are analyzing a therapy or coaching session transcript. Your job is to identify who is the therapist vs the client.
+
+Return a JSON object with these fields:
+- clientContent: A single string containing ONLY what the client said. Combine all client turns into one block. Use their exact words. This is what we use for personalization.
+- therapistContent: (optional) What the therapist said, if any.
+- hasMultipleSpeakers: true if you detected a back-and-forth between therapist and client, false if it's a single speaker (e.g. client journal, monologue).
+
+Rules:
+- Therapist typically: asks questions ("How does that make you feel?"), reflects, summarizes, gives suggestions.
+- Client typically: shares feelings, describes situations, expresses thoughts, talks about their life.
+- If unclear or single speaker, put everything in clientContent.
+- Preserve the client's words exactly; do not paraphrase.`,
+        },
+        {
+          role: "user",
+          content: `Identify therapist vs client in this transcript and return the JSON:\n\n${transcript.slice(0, 15000)}`,
+        },
+      ],
+      response_format: { type: "json_object" },
+    })
+
+    const labelingText = labelingCompletion.choices[0]?.message?.content
+    if (labelingText) {
+      try {
+        const labeled = JSON.parse(labelingText) as {
+          clientContent?: string
+          hasMultipleSpeakers?: boolean
+        }
+        if (labeled.clientContent?.trim()) {
+          contentForAnalysis = labeled.clientContent.trim()
+        }
+      } catch {
+        // Fall back to full transcript if parsing fails
+      }
+    }
+
     const completion = await openai.chat.completions.create({
       model: "gpt-4o-mini",
       messages: [
@@ -60,7 +103,7 @@ If the transcript doesn't clearly provide something, use 2-3 sensible options ba
         },
         {
           role: "user",
-          content: `Analyze this transcript and return the JSON object:\n\n${transcript.slice(0, 15000)}`,
+          content: `Analyze this transcript (client's words only) and return the JSON object:\n\n${contentForAnalysis.slice(0, 15000)}`,
         },
       ],
       response_format: { type: "json_object" },
