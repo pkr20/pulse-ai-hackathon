@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/sheet"
 import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { getState, getSessionInsights, exercises } from "@/lib/store"
+import { getState, getSessionInsights, exercises, saveSharedChat } from "@/lib/store"
 
 interface Message {
   role: "user" | "assistant"
@@ -30,6 +30,7 @@ export default function AITherapistChat({ trigger }: AITherapistChatProps) {
   const [input, setInput] = useState("")
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [shared, setShared] = useState(false)
   const scrollRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -113,13 +114,25 @@ export default function AITherapistChat({ trigger }: AITherapistChatProps) {
     }
   }
 
+  function handleShareWithTherapist() {
+    if (shared || messages.length < 2) return
+    setError(null)
+    try {
+      saveSharedChat(messages)
+      setShared(true)
+    } catch (e) {
+      console.error("Share failed:", e)
+      setError(e instanceof Error ? e.message : "Could not share.")
+    }
+  }
+
   return (
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>
         {trigger ?? (
           <Button variant="outline" size="sm" className="gap-1.5">
             <MessageCircle className="h-4 w-4" />
-            Talk to AI
+            Let&apos;s talk
           </Button>
         )}
       </SheetTrigger>
@@ -164,6 +177,22 @@ export default function AITherapistChat({ trigger }: AITherapistChatProps) {
         </ScrollArea>
 
         <div className="p-4 border-t border-border/40 space-y-2">
+          {messages.length > 1 && (
+            <div className="space-y-2">
+              <p className="text-xs text-muted-foreground">
+                Do you want this chat to go to your therapist?
+              </p>
+              <Button
+                variant={shared ? "secondary" : "outline"}
+                size="sm"
+                onClick={handleShareWithTherapist}
+                disabled={shared}
+                className="w-full"
+              >
+                {shared ? "Shared" : "Yes, share"}
+              </Button>
+            </div>
+          )}
           {error && (
             <p className="text-sm text-destructive">{error}</p>
           )}

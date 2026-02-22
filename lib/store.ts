@@ -97,6 +97,13 @@ export interface SessionInsights {
 
 const STORAGE_KEY = "mindgrove-state"
 const SESSION_INSIGHTS_KEY = "mindgrove-session-insights"
+const SHARED_CHATS_KEY = "mindgrove-shared-chats"
+
+export interface SharedChat {
+  id: string
+  sharedAt: string
+  messages: { role: "user" | "assistant"; content: string }[]
+}
 
 const defaultState: UserState = {
   trees: [],
@@ -531,6 +538,47 @@ export function setSessionInsights(insights: SessionInsights): void {
 export function clearSessionInsights(): void {
   if (typeof window === "undefined") return
   localStorage.removeItem(SESSION_INSIGHTS_KEY)
+}
+
+export function saveSharedChat(messages: { role: "user" | "assistant"; content: string }[]): SharedChat {
+  if (typeof window === "undefined") throw new Error("Cannot save shared chat on server")
+  const plainMessages = messages.map((m) => ({
+    role: m.role as "user" | "assistant",
+    content: String(m.content ?? ""),
+  }))
+  const chat: SharedChat = {
+    id: Math.random().toString(36).substring(2, 15),
+    sharedAt: new Date().toISOString(),
+    messages: plainMessages,
+  }
+  const existing = getSharedChats()
+  const updated = [chat, ...existing]
+  try {
+    localStorage.setItem(SHARED_CHATS_KEY, JSON.stringify(updated))
+  } catch (e) {
+    if (e instanceof DOMException && e.name === "QuotaExceededError") {
+      throw new Error("Storage full. Try removing old shared chats.")
+    }
+    throw e
+  }
+  return chat
+}
+
+export function getSharedChats(): SharedChat[] {
+  if (typeof window === "undefined") return []
+  try {
+    const stored = localStorage.getItem(SHARED_CHATS_KEY)
+    if (!stored) return []
+    return JSON.parse(stored)
+  } catch {
+    return []
+  }
+}
+
+export function removeSharedChat(id: string): void {
+  if (typeof window === "undefined") return
+  const chats = getSharedChats().filter((c) => c.id !== id)
+  localStorage.setItem(SHARED_CHATS_KEY, JSON.stringify(chats))
 }
 
 const DISTORTION_TYPES = [

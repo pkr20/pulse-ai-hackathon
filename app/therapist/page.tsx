@@ -7,12 +7,16 @@ import {
   getExerciseTypeStats,
   getMonthActivityMap,
   getSessionInsights,
+  getSharedChats,
+  removeSharedChat,
   type UserState,
   type CBTExerciseType,
+  type SharedChat,
 } from "@/lib/store"
-import { ArrowLeft, BarChart3, Flame, TrendingUp, Calendar, Stethoscope } from "lucide-react"
+import { ArrowLeft, BarChart3, Flame, TrendingUp, Calendar, Stethoscope, MessageCircle, X, RefreshCw } from "lucide-react"
 import ActivityGrid from "@/components/activity-grid"
 import TranscriptUpload from "@/components/transcript-upload"
+import { Button } from "@/components/ui/button"
 
 const exerciseTitles: Record<CBTExerciseType, string> = {
   "thought-record": "Thought Record",
@@ -29,12 +33,24 @@ export default function TherapistPage() {
   const [exerciseStats, setExerciseStats] = useState<Record<string, number>>({})
   const [activityMap, setActivityMap] = useState<Record<string, number>>({})
   const [insights, setInsights] = useState<ReturnType<typeof getSessionInsights>>(null)
+  const [sharedChats, setSharedChats] = useState<SharedChat[]>([])
 
   const loadState = useCallback(() => {
     setState(getState())
     setExerciseStats(getExerciseTypeStats())
     setActivityMap(getMonthActivityMap())
     setInsights(getSessionInsights())
+    setSharedChats(getSharedChats())
+  }, [])
+
+  useEffect(() => {
+    const handler = () => setSharedChats(getSharedChats())
+    window.addEventListener("storage", handler)
+    document.addEventListener("visibilitychange", handler)
+    return () => {
+      window.removeEventListener("storage", handler)
+      document.removeEventListener("visibilitychange", handler)
+    }
   }, [])
 
   useEffect(() => {
@@ -92,6 +108,80 @@ export default function TherapistPage() {
       </header>
 
       <div className="mx-auto max-w-4xl px-4 py-6 space-y-8">
+        {/* Shared chats from client */}
+        <section>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
+              <MessageCircle className="h-4 w-4" />
+              Chats shared with you
+            </h2>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setSharedChats(getSharedChats())}
+              className="gap-1.5 text-muted-foreground"
+            >
+              <RefreshCw className="h-3.5 w-3.5" />
+              Refresh
+            </Button>
+          </div>
+          {sharedChats.length > 0 ? (
+            <div className="space-y-4">
+              {sharedChats.map((chat) => (
+                <div
+                  key={chat.id}
+                  className="rounded-xl border border-border/40 bg-card/80 p-4 space-y-3 relative"
+                >
+                  <div className="flex items-center justify-between">
+                    <p className="text-xs text-muted-foreground">
+                      Shared {new Date(chat.sharedAt).toLocaleString()}
+                    </p>
+                    <button
+                      onClick={() => {
+                        removeSharedChat(chat.id)
+                        setSharedChats(getSharedChats())
+                      }}
+                      className="text-muted-foreground hover:text-foreground p-1 rounded"
+                      aria-label="Dismiss"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  </div>
+                  <div className="space-y-2 max-h-60 overflow-y-auto">
+                    {chat.messages.map((m, i) => (
+                      <div
+                        key={i}
+                        className={`text-sm ${
+                          m.role === "user"
+                            ? "text-right"
+                            : "text-left"
+                        }`}
+                      >
+                        <span className="text-xs font-medium text-muted-foreground mr-1">
+                          {m.role === "user" ? "Client" : "AI"}:
+                        </span>
+                        <span
+                          className={`inline-block rounded-lg px-2 py-1 ${
+                            m.role === "user"
+                              ? "bg-primary/10 text-foreground"
+                              : "bg-muted/50 text-foreground"
+                          }`}
+                        >
+                          <span className="whitespace-pre-line">{m.content}</span>
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-sm text-muted-foreground italic py-4">
+              No chats shared yet. Client taps &quot;Yes, share&quot; in Let&apos;s talk to send one.
+            </p>
+          )}
+        </section>
+
         {/* Overview */}
         <section>
           <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-4">
