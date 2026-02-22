@@ -3,7 +3,7 @@
 export type CBTExerciseType =
   | "thought-record"
   | "cognitive-distortion"
-  | "behavioral-activation"
+  | "grounding"
   | "gratitude"
   | "breathing"
   | "reframing"
@@ -17,6 +17,7 @@ export interface CBTExercise {
   dailyLifeExample: string[]
   reflectionPrompt: string
   reflectionOptions: string[]
+  watchNotification: string
   treeReward: TreeType
 }
 
@@ -209,6 +210,7 @@ export const exercises: CBTExercise[] = [
       "During my lunch break.",
       "When I finish my work.",
     ],
+    watchNotification: "High heart rate? Let's check your thoughts for a moment.",
     treeReward: "oak",
   },
   {
@@ -234,31 +236,34 @@ export const exercises: CBTExercise[] = [
       "Thinking in 'good' or 'bad' only.",
       "Taking things too personally.",
     ],
+    watchNotification: "Is your heart racing? Maybe it's a 'mental trap.' Check now?",
     treeReward: "pine",
   },
   {
-    id: "behavioral-activation-1",
-    type: "behavioral-activation",
-    title: "Activity Planning",
-    description: "Plan activities to boost your mood.",
+    id: "grounding-1",
+    type: "grounding",
+    title: "5-4-3-2-1 Grounding",
+    description: "Use your senses to focus on the present moment.",
     prompts: [
-      "What activity have you been avoiding or putting off?",
-      "On a scale of 1-10, how much pleasure or accomplishment might this bring?",
-      "What is the smallest first step you could take?",
-      "When will you take this step? Be specific.",
+      "Name 5 things you can see right now.",
+      "Name 4 things you can feel (like your chair).",
+      "Name 3 things you can hear (like a clock).",
+      "Name 2 things you can smell (or like to smell).",
+      "Name 1 thing you can taste (or like to taste).",
     ],
     dailyLifeExample: [
-      "When you have chores to do.",
-      "When you feel like doing nothing.",
-      "Use this to start with one tiny step.",
+      "When your mind is racing.",
+      "When you feel very worried or scared.",
+      "Use this to feel safe in the present.",
     ],
-    reflectionPrompt: "Which small win would make you feel happiest tonight?",
+    reflectionPrompt: "When is the next time you might use this today?",
     reflectionOptions: [
-      "Finishing a small task.",
-      "Going for a short walk.",
-      "Calling a friend.",
-      "Relaxing with a book.",
+      "If I start to feel worried.",
+      "When things get too loud.",
+      "Before I go to a new place.",
+      "Whenever I need to feel calm.",
     ],
+    watchNotification: "You seem stressed. Use your senses to find 5 things you see?",
     treeReward: "cherry",
   },
   {
@@ -282,6 +287,7 @@ export const exercises: CBTExercise[] = [
       "A coworker.",
       "Just keeping it for myself.",
     ],
+    watchNotification: "Take a beat. What's one good thing that happened just now?",
     treeReward: "birch",
   },
   {
@@ -305,6 +311,7 @@ export const exercises: CBTExercise[] = [
       "Outside in the fresh air.",
       "Right before I go to sleep.",
     ],
+    watchNotification: "Heart rate is 105bpm. Want to take 3 deep breaths with me?",
     treeReward: "willow",
   },
   {
@@ -330,6 +337,7 @@ export const exercises: CBTExercise[] = [
       "It is okay to be tired.",
       "I am proud of my work.",
     ],
+    watchNotification: "Don't be hard on yourself. Use this time to be kind.",
     treeReward: "maple",
   },
 ]
