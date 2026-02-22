@@ -51,7 +51,16 @@ export interface UserState {
   fertilizer: number
 }
 
+/** Session insights from transcript analysis - used to personalize exercise prompts */
+export interface SessionInsights {
+  summary: string
+  emotions: string[]
+  themes: string[]
+  personalizedContext: string
+}
+
 const STORAGE_KEY = "mindgrove-state"
+const SESSION_INSIGHTS_KEY = "mindgrove-session-insights"
 
 const defaultState: UserState = {
   trees: [],
@@ -407,4 +416,38 @@ export function getExerciseTypeStats(): Record<CBTExerciseType, number> {
     stats[ex.exerciseType] = (stats[ex.exerciseType] || 0) + 1
   }
   return stats as Record<CBTExerciseType, number>
+}
+
+export function getSessionInsights(): SessionInsights | null {
+  if (typeof window === "undefined") return null
+  try {
+    const stored = localStorage.getItem(SESSION_INSIGHTS_KEY)
+    if (!stored) return null
+    return JSON.parse(stored) as SessionInsights
+  } catch {
+    return null
+  }
+}
+
+export function setSessionInsights(insights: SessionInsights): void {
+  if (typeof window === "undefined") return
+  localStorage.setItem(SESSION_INSIGHTS_KEY, JSON.stringify(insights))
+}
+
+export function clearSessionInsights(): void {
+  if (typeof window === "undefined") return
+  localStorage.removeItem(SESSION_INSIGHTS_KEY)
+}
+
+/** Returns an exercise with prompts personalized using session insights when available */
+export function getPersonalizedExercise(
+  exercise: CBTExercise,
+  sessionInsights: SessionInsights | null
+): CBTExercise {
+  if (!sessionInsights?.personalizedContext) return exercise
+  const prefix = `${sessionInsights.personalizedContext}\n\n`
+  return {
+    ...exercise,
+    prompts: exercise.prompts.map((p) => prefix + p),
+  }
 }

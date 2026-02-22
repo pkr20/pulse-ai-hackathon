@@ -4,7 +4,15 @@ import { useState, useEffect, useCallback, useRef } from "react"
 import { useRouter } from "next/navigation"
 import dynamic from "next/dynamic"
 import { ArrowLeft, Droplets, TreePine, Sprout } from "lucide-react"
-import { getState, addFertilizer, useFertilizerOnTree, completeExercise, exercises } from "@/lib/store"
+import {
+  getState,
+  addFertilizer,
+  useFertilizerOnTree,
+  completeExercise,
+  exercises,
+  getSessionInsights,
+  getPersonalizedExercise,
+} from "@/lib/store"
 import type { UserState, CBTExercise } from "@/lib/store"
 import ExerciseDialog from "@/components/exercise-dialog"
 
@@ -47,7 +55,9 @@ export default function ForestPage() {
   }, [])
 
   const handleCollectFertilizer = useCallback((_orbIndex: number) => {
-    const randomExercise = exercises[Math.floor(Math.random() * exercises.length)]
+    const base = exercises[Math.floor(Math.random() * exercises.length)]
+    const insights = getSessionInsights()
+    const randomExercise = getPersonalizedExercise(base, insights)
     setFertilizerExercise(randomExercise)
     setFertilizerDialogOpen(true)
     return new Promise<boolean>((resolve) => {
