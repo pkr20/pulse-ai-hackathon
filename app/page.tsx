@@ -21,8 +21,7 @@ import ActivityGrid from "@/components/activity-grid"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import Link from "next/link"
 import { TreePine, Sprout, ChevronLeft, ChevronRight, Maximize2, Stethoscope } from "lucide-react"
-import TranscriptUpload from "@/components/transcript-upload"
-
+import AITherapistChat from "@/components/ai-therapist-chat"
 const levelNames = [
   "",
   "Bare Soil",
@@ -103,6 +102,7 @@ export default function Home() {
             </h1>
           </div>
           <div className="flex items-center gap-2">
+            <AITherapistChat />
             <Link
               href="/therapist"
               className="flex items-center gap-1.5 rounded-lg border border-border/40 px-2.5 py-1.5 text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
