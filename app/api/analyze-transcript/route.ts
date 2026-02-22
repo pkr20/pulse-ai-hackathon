@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server"
 import OpenAI from "openai"
-import type { SessionInsights } from "@/lib/store"
+import type { CBTExerciseType, SessionInsights } from "@/lib/store"
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -36,6 +36,13 @@ Return a JSON object with these fields:
 - themes: 2-4 themes (e.g. ["work", "family", "self-doubt"])
 - checkIn: "[emotion] about [topic]" - 3-5 words (e.g. "nervous about work")
 - spotTheDistortionThought: A thought the client said, 5-12 words, use their words
+- suggestedPractices: Array of 1-2 suggested daily practices. Each has exerciseType and reason (5-12 words).
+  Map clinically: OCD/rumination/catastrophizing → cognitive-distortion (Spot the Distortion)
+  Depression/low mood/negativity → gratitude (Gratitude Journal)
+  Anxiety/panic/stress → breathing (Mindful Breathing)
+  Avoidance/low motivation/withdrawal → behavioral-activation (Activity Planning)
+  Negative self-talk/self-criticism → thought-record or reframing (Kind Thoughts)
+  Use exerciseType: "cognitive-distortion" | "gratitude" | "breathing" | "behavioral-activation" | "thought-record" | "reframing"
 - personalizedOptions: Object with options FROM THE TRANSCRIPT for exercises:
   - situations: 3-5 situations/events the client described (e.g. "Meeting with boss", "Argument with partner")
   - thoughts: 3-5 negative thoughts they expressed (e.g. "I'm not good enough", "They don't like me")
@@ -70,6 +77,7 @@ If the transcript doesn't clearly provide something, use 2-3 sensible options ba
       themes?: string[]
       checkIn?: string
       spotTheDistortionThought?: string
+      suggestedPractices?: { exerciseType: string; reason: string }[]
       personalizedOptions?: {
         situations?: string[]
         thoughts?: string[]
@@ -85,6 +93,27 @@ If the transcript doesn't clearly provide something, use 2-3 sensible options ba
       }
     }
 
+    const validTypes: CBTExerciseType[] = [
+      "thought-record",
+      "cognitive-distortion",
+      "behavioral-activation",
+      "gratitude",
+      "breathing",
+      "reframing",
+    ]
+    const suggestedPractices = Array.isArray(parsed.suggestedPractices)
+      ? parsed.suggestedPractices
+          .filter(
+            (s): s is { exerciseType: string; reason: string } =>
+              s && typeof s.exerciseType === "string" && typeof s.reason === "string" && validTypes.includes(s.exerciseType as CBTExerciseType)
+          )
+          .map((s) => ({
+            exerciseType: s.exerciseType as CBTExerciseType,
+            reason: String(s.reason).slice(0, 80),
+          }))
+          .slice(0, 2)
+      : undefined
+
     const insights: SessionInsights = {
       summary: parsed.summary ?? "Session analyzed.",
       emotions: Array.isArray(parsed.emotions) ? parsed.emotions : [],
@@ -96,6 +125,7 @@ If the transcript doesn't clearly provide something, use 2-3 sensible options ba
           : "reflective about your week"),
       spotTheDistortionThought: parsed.spotTheDistortionThought?.trim() || undefined,
       personalizedOptions: parsed.personalizedOptions,
+      suggestedPractices: suggestedPractices?.length ? suggestedPractices : undefined,
     }
 
     return NextResponse.json(insights)

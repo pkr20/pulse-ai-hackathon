@@ -46,12 +46,15 @@ export default function Home() {
   const [dialogOpen, setDialogOpen] = useState(false)
   const [topPanel, setTopPanel] = useState<"forest" | "activity">("forest")
 
+  const [sessionInsights, setSessionInsights] = useState<ReturnType<typeof getSessionInsights>>(null)
+
   const loadState = useCallback(() => {
     const s = getState()
     setState(s)
     setTodayCount(getTodayExerciseCount())
     setExerciseStats(getExerciseTypeStats())
     setActivityMap(getMonthActivityMap())
+    setSessionInsights(getSessionInsights())
   }, [])
 
   useEffect(() => {
@@ -100,7 +103,7 @@ export default function Home() {
             </h1>
           </div>
           <div className="flex items-center gap-2">
-            <TranscriptUpload />
+            <TranscriptUpload onInsightsChange={() => setSessionInsights(getSessionInsights())} />
             <div className="text-right">
               <p className="text-xs text-muted-foreground uppercase tracking-wider">
                 Level {state.level}
@@ -196,6 +199,33 @@ export default function Home() {
           <StatsPanel state={state} todayCount={todayCount} />
         </section>
 
+        {/* Suggested for you - when transcript has been analyzed */}
+        {sessionInsights?.suggestedPractices && sessionInsights.suggestedPractices.length > 0 && (
+          <section className="pb-6">
+            <h2 className="font-serif text-lg font-semibold text-foreground mb-4">
+              Suggested for you
+            </h2>
+            <p className="text-sm text-muted-foreground mb-4">
+              Based on your session, these practices may help most right now.
+            </p>
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {sessionInsights.suggestedPractices.map((sp) => {
+                const ex = exercises.find((e) => e.type === sp.exerciseType)
+                if (!ex) return null
+                return (
+                  <ExerciseCard
+                    key={ex.id}
+                    exercise={ex}
+                    completedCount={exerciseStats[ex.type] || 0}
+                    onStart={handleStartExercise}
+                    suggestedReason={sp.reason}
+                  />
+                )
+              })}
+            </div>
+          </section>
+        )}
+
         {/* Exercises */}
         <section className="pb-8">
           <Tabs defaultValue="all" className="w-full">
@@ -218,14 +248,18 @@ export default function Home() {
 
             <TabsContent value="all" className="mt-0">
               <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                {exercises.map((ex) => (
-                  <ExerciseCard
-                    key={ex.id}
-                    exercise={ex}
-                    completedCount={exerciseStats[ex.type] || 0}
-                    onStart={handleStartExercise}
-                  />
-                ))}
+                {exercises.map((ex) => {
+                  const suggested = sessionInsights?.suggestedPractices?.find((sp) => sp.exerciseType === ex.type)
+                  return (
+                    <ExerciseCard
+                      key={ex.id}
+                      exercise={ex}
+                      completedCount={exerciseStats[ex.type] || 0}
+                      onStart={handleStartExercise}
+                      suggestedReason={suggested?.reason}
+                    />
+                  )
+                })}
               </div>
             </TabsContent>
 
@@ -237,14 +271,18 @@ export default function Home() {
                       ex.type
                     )
                   )
-                  .map((ex) => (
-                    <ExerciseCard
-                      key={ex.id}
-                      exercise={ex}
-                      completedCount={exerciseStats[ex.type] || 0}
-                      onStart={handleStartExercise}
-                    />
-                  ))}
+                  .map((ex) => {
+                    const suggested = sessionInsights?.suggestedPractices?.find((sp) => sp.exerciseType === ex.type)
+                    return (
+                      <ExerciseCard
+                        key={ex.id}
+                        exercise={ex}
+                        completedCount={exerciseStats[ex.type] || 0}
+                        onStart={handleStartExercise}
+                        suggestedReason={suggested?.reason}
+                      />
+                    )
+                  })}
               </div>
             </TabsContent>
 
@@ -256,14 +294,18 @@ export default function Home() {
                       ex.type
                     )
                   )
-                  .map((ex) => (
-                    <ExerciseCard
-                      key={ex.id}
-                      exercise={ex}
-                      completedCount={exerciseStats[ex.type] || 0}
-                      onStart={handleStartExercise}
-                    />
-                  ))}
+                  .map((ex) => {
+                    const suggested = sessionInsights?.suggestedPractices?.find((sp) => sp.exerciseType === ex.type)
+                    return (
+                      <ExerciseCard
+                        key={ex.id}
+                        exercise={ex}
+                        completedCount={exerciseStats[ex.type] || 0}
+                        onStart={handleStartExercise}
+                        suggestedReason={suggested?.reason}
+                      />
+                    )
+                  })}
               </div>
             </TabsContent>
           </Tabs>

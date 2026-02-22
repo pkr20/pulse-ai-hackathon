@@ -74,6 +74,12 @@ export interface PersonalizedOptions {
   addThoughts?: string[]     // For Spot the Distortion step 3 (2-4)
 }
 
+/** Suggested daily practice based on transcript (e.g. OCD → Spot the Distortion) */
+export interface SuggestedPractice {
+  exerciseType: CBTExerciseType
+  reason: string
+}
+
 /** Session insights from transcript analysis - used to personalize exercise prompts */
 export interface SessionInsights {
   summary: string
@@ -83,6 +89,8 @@ export interface SessionInsights {
   spotTheDistortionThought?: string
   /** Options derived from transcript - used to personalize all exercises */
   personalizedOptions?: PersonalizedOptions
+  /** AI-suggested exercises based on themes (e.g. OCD → cognitive-distortion, depression → gratitude) */
+  suggestedPractices?: SuggestedPractice[]
 }
 
 const STORAGE_KEY = "mindgrove-state"

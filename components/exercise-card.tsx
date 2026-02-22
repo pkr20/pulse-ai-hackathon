@@ -35,12 +35,15 @@ interface ExerciseCardProps {
   exercise: CBTExercise
   completedCount: number
   onStart: (exercise: CBTExercise) => void
+  /** Short reason when this exercise is AI-suggested (e.g. "For ruminating thoughts") */
+  suggestedReason?: string
 }
 
 export default function ExerciseCard({
   exercise,
   completedCount,
   onStart,
+  suggestedReason,
 }: ExerciseCardProps) {
   return (
     <Card className="group cursor-pointer border-border/60 bg-card/80 backdrop-blur-sm transition-all duration-300 hover:shadow-lg hover:border-primary/30 hover:-translate-y-0.5">
@@ -51,11 +54,18 @@ export default function ExerciseCard({
               {exerciseIcons[exercise.type]}
             </div>
             <div>
-              <CardTitle className="text-base font-semibold text-card-foreground">
-                {exercise.title}
-              </CardTitle>
+              <div className="flex items-center gap-2 flex-wrap">
+                <CardTitle className="text-base font-semibold text-card-foreground">
+                  {exercise.title}
+                </CardTitle>
+                {suggestedReason && (
+                  <span className="text-[10px] font-medium text-primary bg-primary/15 px-1.5 py-0.5 rounded">
+                    Suggested
+                  </span>
+                )}
+              </div>
               <p className="text-xs text-muted-foreground mt-0.5">
-                Plants a {treeLabels[exercise.treeReward]} tree
+                {suggestedReason ? suggestedReason : `Plants a ${treeLabels[exercise.treeReward]} tree`}
               </p>
             </div>
           </div>

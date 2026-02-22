@@ -179,6 +179,11 @@ export default function TranscriptUpload({ onInsightsChange }: TranscriptUploadP
                 <p className="text-sm text-muted-foreground italic">
                   &quot;Last time you felt {insights.checkIn}. How much now?&quot;
                 </p>
+                {insights.suggestedPractices && insights.suggestedPractices.length > 0 && (
+                  <p className="text-xs text-muted-foreground">
+                    Suggested: {insights.suggestedPractices.map((sp) => sp.reason).join("; ")}
+                  </p>
+                )}
                 {insights.spotTheDistortionThought && (
                   <p className="text-xs text-muted-foreground">
                     Spot the Distortion: &quot;{insights.spotTheDistortionThought}&quot;
