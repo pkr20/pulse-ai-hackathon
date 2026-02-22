@@ -38,7 +38,7 @@ export default function ExerciseDialog({
 
   if (!exercise) return null
 
-  const totalSteps = exercise.prompts.length
+  const totalSteps = exercise.prompts.length + 2
   const progress = ((currentStep + 1) / totalSteps) * 100
 
   function handleOpen(isOpen: boolean) {
@@ -60,7 +60,9 @@ export default function ExerciseDialog({
     } else {
       // Complete
       setCompleted(true)
-      onComplete(exercise, responses)
+      if (exercise) {
+        onComplete(exercise, responses)
+      }
     }
   }
 
@@ -108,55 +110,96 @@ export default function ExerciseDialog({
           <DialogTitle className="font-serif text-lg text-card-foreground">
             {exercise.title}
           </DialogTitle>
-          <DialogDescription className="text-muted-foreground">
-            Step {currentStep + 1} of {totalSteps}
+          <DialogDescription className="text-muted-foreground italic">
+            {currentStep === 0
+              ? "Introduction"
+              : currentStep === totalSteps - 1
+                ? "Everyday Application"
+                : `Step ${currentStep} of ${totalSteps - 2}`}
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-5">
           <Progress value={progress} className="h-1.5" />
 
-          <div className="min-h-[180px] space-y-4">
-            <p className="text-sm font-medium text-card-foreground leading-relaxed">
-              {exercise.prompts[currentStep]}
-            </p>
+          {currentStep === 0 ? (
+            <div className="space-y-4">
+              <div className="rounded-lg bg-primary/10 p-4 border border-primary/20">
+                <h4 className="text-sm font-semibold text-primary mb-2 text-center">When to use this?</h4>
+                <ul className="space-y-2">
+                  {exercise.dailyLifeExample.map((example, i) => (
+                    <li key={i} className="flex items-start gap-2 text-sm text-card-foreground">
+                      <span className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-primary" />
+                      <span>{example}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              <p className="text-sm text-muted-foreground text-center">
+                Do you remember a time like this?
+              </p>
+            </div>
+          ) : currentStep === totalSteps - 1 ? (
+            <div className="space-y-4">
+              <p className="text-sm font-medium text-card-foreground leading-relaxed text-center">
+                {exercise.reflectionPrompt}
+              </p>
+              <div className="grid gap-2">
+                {exercise.reflectionOptions.map((option, i) => (
+                  <Button
+                    key={i}
+                    variant={responses[currentStep] === option ? "default" : "outline"}
+                    onClick={() => handleResponseChange(option)}
+                    className="justify-start text-left h-auto py-3 px-4 font-normal whitespace-normal"
+                  >
+                    {option}
+                  </Button>
+                ))}
+              </div>
+            </div>
+          ) : (
+            <>
+              <p className="text-sm font-medium text-card-foreground leading-relaxed">
+                {exercise.prompts[currentStep - 1]}
+              </p>
 
-            {exercise.type === "breathing" && currentStep === 0 ? (
-              <BreathingExercise
-                targetRounds={3}
-                onComplete={() => {
-                  handleResponseChange("Completed 3 breathing rounds")
-                }}
-              />
-            ) : exercise.type === "gratitude" && currentStep === 0 ? (
-              <GratitudeExercise
-                onComplete={(selected) => {
-                  handleResponseChange(selected.join(", "))
-                  setCurrentStep(1)
-                }}
-              />
-            ) : exercise.type === "gratitude" && currentStep === 1 ? (
-              <GratitudeWordCloud
-                words={[
-                  ...getAllGratitudeWords(),
-                  ...(responses[0] || "")
-                    .split(",")
-                    .map((w) => w.trim().toLowerCase())
-                    .filter(Boolean),
-                ]}
-              />
-            ) : (
-              <Textarea
-                value={responses[currentStep] || ""}
-                onChange={(e) => handleResponseChange(e.target.value)}
-                placeholder="Take your time to reflect and write your response..."
-                className="min-h-[120px] resize-none border-border bg-muted/30 text-card-foreground placeholder:text-muted-foreground focus:border-primary"
-              />
-            )}
-          </div>
+              {exercise.type === "breathing" && currentStep === 1 ? (
+                <BreathingExercise
+                  targetRounds={3}
+                  onComplete={() => {
+                    handleResponseChange("Completed 3 breathing rounds")
+                  }}
+                />
+              ) : exercise.type === "gratitude" && currentStep === 1 ? (
+                <GratitudeExercise
+                  onComplete={(selected) => {
+                    handleResponseChange(selected.join(", "))
+                    setCurrentStep(2)
+                  }}
+                />
+              ) : exercise.type === "gratitude" && currentStep === 2 ? (
+                <GratitudeWordCloud
+                  words={[
+                    ...getAllGratitudeWords(),
+                    ...(responses[1] || "")
+                      .split(",")
+                      .map((w) => w.trim().toLowerCase())
+                      .filter(Boolean),
+                  ]}
+                />
+              ) : (
+                <Textarea
+                  value={responses[currentStep] || ""}
+                  onChange={(e) => handleResponseChange(e.target.value)}
+                  placeholder="Take your time to reflect and write your response..."
+                  className="min-h-[120px] resize-none border-border bg-muted/30 text-card-foreground placeholder:text-muted-foreground focus:border-primary"
+                />
+              )}
+            </>
+          )}
 
           {/* Hide nav on gratitude step 0 (it has its own Continue button) */}
-          {!(exercise.type === "gratitude" && currentStep === 0) && (
+          {!(exercise.type === "gratitude" && currentStep === 1) && (
             <div className="flex items-center justify-between pt-2">
               <Button
                 variant="ghost"
@@ -171,9 +214,11 @@ export default function ExerciseDialog({
               <Button
                 onClick={handleNext}
                 disabled={
-                  exercise.type === "gratitude" && currentStep === 1
-                    ? !responses[0]?.trim()
-                    : !responses[currentStep]?.trim()
+                  currentStep === 0
+                    ? false
+                    : exercise.type === "gratitude" && currentStep === 2
+                      ? !responses[1]?.trim()
+                      : !responses[currentStep]?.trim()
                 }
                 size="sm"
                 className="bg-primary text-primary-foreground hover:bg-primary/90"
