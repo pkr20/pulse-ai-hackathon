@@ -8,19 +8,20 @@ import * as THREE from "three"
 interface FertilizerOrbProps {
   position: [number, number, number]
   onCollect: () => void
+  disabled?: boolean
 }
 
-export default function FertilizerOrb({ position, onCollect }: FertilizerOrbProps) {
+export default function FertilizerOrb({ position, onCollect, disabled }: FertilizerOrbProps) {
   const orbRef = useRef<THREE.Mesh>(null)
   const glowRef = useRef<THREE.Mesh>(null)
   const lightRef = useRef<THREE.PointLight>(null)
   const collected = useRef(false)
 
   const handleIntersection = useCallback(() => {
-    if (collected.current) return
+    if (collected.current || disabled) return
     collected.current = true
     onCollect()
-  }, [onCollect])
+  }, [onCollect, disabled])
 
   useFrame((state) => {
     const t = state.clock.elapsedTime

@@ -1,11 +1,12 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect, useCallback, useRef } from "react"
 import { useRouter } from "next/navigation"
 import dynamic from "next/dynamic"
 import { ArrowLeft, Droplets, TreePine, Sprout } from "lucide-react"
-import { getState, addFertilizer, useFertilizerOnTree } from "@/lib/store"
-import type { UserState } from "@/lib/store"
+import { getState, addFertilizer, useFertilizerOnTree, completeExercise, exercises } from "@/lib/store"
+import type { UserState, CBTExercise } from "@/lib/store"
+import ExerciseDialog from "@/components/exercise-dialog"
 
 const Forest3DScene = dynamic(() => import("@/components/forest-3d/scene"), {
   ssr: false,
@@ -26,6 +27,9 @@ export default function ForestPage() {
   const [state, setState] = useState<UserState | null>(null)
   const [notification, setNotification] = useState<string | null>(null)
   const [nearbyTree, setNearbyTree] = useState(false)
+  const [fertilizerDialogOpen, setFertilizerDialogOpen] = useState(false)
+  const [fertilizerExercise, setFertilizerExercise] = useState<CBTExercise | null>(null)
+  const fertilizerResolveRef = useRef<(() => void) | null>(null)
 
   useEffect(() => {
     setState(getState())
@@ -36,11 +40,35 @@ export default function ForestPage() {
     setTimeout(() => setNotification(null), 2000)
   }, [])
 
-  const handleCollectFertilizer = useCallback(() => {
-    const newState = addFertilizer(1)
-    setState(newState)
-    showNotification("+1 Fertilizer")
-  }, [showNotification])
+  const handleCollectFertilizer = useCallback((_orbIndex: number) => {
+    const randomExercise = exercises[Math.floor(Math.random() * exercises.length)]
+    setFertilizerExercise(randomExercise)
+    setFertilizerDialogOpen(true)
+    return new Promise<void>((resolve) => {
+      fertilizerResolveRef.current = resolve
+    })
+  }, [])
+
+  const handleFertilizerExerciseComplete = useCallback(
+    (exercise: CBTExercise, responses: string[]) => {
+      completeExercise(exercise.type, responses, exercise.treeReward)
+      const newState = addFertilizer(1)
+      setState(newState)
+      setFertilizerDialogOpen(false)
+      setFertilizerExercise(null)
+      fertilizerResolveRef.current?.()
+      fertilizerResolveRef.current = null
+      showNotification("+1 Fertilizer")
+    },
+    [showNotification]
+  )
+
+  const handleFertilizerDialogClose = useCallback(() => {
+    setFertilizerDialogOpen(false)
+    setFertilizerExercise(null)
+    fertilizerResolveRef.current?.()
+    fertilizerResolveRef.current = null
+  }, [])
 
   const handleFertilizeTree = useCallback(
     (treeId: string): boolean => {
@@ -81,6 +109,7 @@ export default function ForestPage() {
         state={state}
         onCollectFertilizer={handleCollectFertilizer}
         onFertilizeTree={handleFertilizeTree}
+        fertilizerDialogOpen={fertilizerDialogOpen}
       />
 
       {/* HUD Overlay */}
@@ -138,6 +167,14 @@ export default function ForestPage() {
           </div>
         </div>
       </div>
+
+      {/* Fertilizer practice dialog - complete a random practice to earn fertilizer */}
+      <ExerciseDialog
+        exercise={fertilizerExercise}
+        open={fertilizerDialogOpen}
+        onClose={handleFertilizerDialogClose}
+        onComplete={handleFertilizerExerciseComplete}
+      />
 
       {/* Click to start overlay */}
       <ClickToStartOverlay />

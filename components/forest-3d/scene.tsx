@@ -16,7 +16,7 @@ const ORB_COUNT = 8
 
 interface Forest3DSceneProps {
   state: UserState
-  onCollectFertilizer: () => void
+  onCollectFertilizer: (orbIndex: number) => Promise<void>
   onFertilizeTree: (treeId: string) => boolean
 }
 
@@ -96,6 +96,7 @@ export default function Forest3DScene({
   state,
   onCollectFertilizer,
   onFertilizeTree,
+  fertilizerDialogOpen = false,
 }: Forest3DSceneProps) {
   const playerPosRef = useRef(new THREE.Vector3(0, 0, 8))
   const nearbyTreeIdRef = useRef<string | null>(null)
@@ -111,14 +112,17 @@ export default function Forest3DScene({
     playerPosRef.current.copy(pos)
   }, [])
 
-  const handleCollectOrb = useCallback((index: number) => {
-    setCollectedOrbs((prev) => {
-      const next = new Set(prev)
-      next.add(index)
-      return next
-    })
-    onCollectFertilizer()
-  }, [onCollectFertilizer])
+  const handleCollectOrb = useCallback(
+    async (index: number) => {
+      await onCollectFertilizer(index)
+      setCollectedOrbs((prev) => {
+        const next = new Set(prev)
+        next.add(index)
+        return next
+      })
+    },
+    [onCollectFertilizer]
+  )
 
   // Pre-compute tree positions to avoid recalculating every frame
   const treePositions = useMemo(
@@ -173,6 +177,7 @@ export default function Forest3DScene({
                 key={i}
                 position={pos}
                 onCollect={() => handleCollectOrb(i)}
+                disabled={fertilizerDialogOpen}
               />
             )
           )}

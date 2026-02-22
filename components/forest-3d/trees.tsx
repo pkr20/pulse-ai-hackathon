@@ -6,11 +6,11 @@ import * as THREE from "three"
 import type { TreeType, TreeStage } from "@/lib/store"
 
 const stageScales: Record<TreeStage, number> = {
-  seed: 0.2,
-  sprout: 0.45,
-  sapling: 0.65,
-  young: 0.85,
-  mature: 1.0,
+  seed: 0.4,
+  sprout: 0.9,
+  sapling: 1.3,
+  young: 1.7,
+  mature: 2.0,
 }
 
 // Color palettes per tree type
