@@ -6,7 +6,7 @@ Walking into the hackathon, we were struck by a statistic from the opening prese
 
 ## What it does
 
-	This app provides an engaging interface tailored towards individuals with ID to help them practice CBT exercises learned in therapy throughout the week. The purpose is to ensure that these individuals are reminded of what they learned throughout the week, and are given a fun outlet to practice these exercises. The app is kept engaging through a game aspect which is a forest full of various trees that the user is trying to grow, and to grow them they must complete the modules that contain exercises learned in therapy. 
+This app provides an engaging interface tailored towards individuals with ID to help them practice CBT exercises learned in therapy throughout the week. The purpose is to ensure that these individuals are reminded of what they learned throughout the week, and are given a fun outlet to practice these exercises. The app is kept engaging through a game aspect which is a forest full of various trees that the user is trying to grow, and to grow them they must complete the modules that contain exercises learned in therapy. 
 
 This app is composed of 6 distinct modules that the user is able to complete, and upon completion of each module they are able to plant a specific type of tree. When the user clicks “Begin Practice”, they are met with a few examples of when to use the exercise in their daily life. The purpose of these examples are to help the user with generalization, which is something they might struggle with. These examples remind the user of how to apply the exercise in their daily life. Next, the application will ask the user various questions and have them rate how they are feeling 1-10, or have them select from a list of answers. The purpose of this feature is to keep it very simple for the user, all they have to do is read the question and click an answer that describes how they’re feeling. Finally, they are asked to select from a list when they might use this exercise in their own life, allowing them to connect what they just did with a real world example.
 
@@ -29,7 +29,7 @@ Our first challenge was figuring out how we would merge the ideas from all four 
 
 Building the 3D garden was extremely difficult and took the most time to program out of all the application’s features. We couldn’t figure out exactly what the user’s incentive would be to build a virtual garden until we integrated the gameplay with the modules themselves, meaning that a user would first have to successfully complete a module in order to plant a tree.
 
-	The user interface of our app was constantly changing. We first started with a vertical mobile game design, but branched out to a desktop interface to make room for more features on the dashboard, including the 3D garden and directory of modules. We had to remove excessive amounts of text and designs that we felt would be overbearing for the user. 
+The user interface of our app was constantly changing. We first started with a vertical mobile game design, but branched out to a desktop interface to make room for more features on the dashboard, including the 3D garden and directory of modules. We had to remove excessive amounts of text and designs that we felt would be overbearing for the user. 
 
 Another challenge we faced was deploying our application to the internet because we did not have enough time to find our own domain that could integrate with the APIs that were used in our local host server.
 
@@ -60,7 +60,7 @@ and how to design a speech-to-text pipeline that feeds into a downstream AI syst
 
 ## What's next for Mind Grove 
 
-	The next stage for our application is to expand its scope. First, we want to be able to connect the application to Apple Watches so that it is able to send daily notifications to the client to remind them to check in and practice their exercises, as well as track the client’s heart rate and provide suggested exercises if it is determined that they are stressed out. A mockup of what these Apple Watch notifications would look like is shown on the current prototype. 
+The next stage for our application is to expand its scope. First, we want to be able to connect the application to Apple Watches so that it is able to send daily notifications to the client to remind them to check in and practice their exercises, as well as track the client’s heart rate and provide suggested exercises if it is determined that they are stressed out. A mockup of what these Apple Watch notifications would look like is shown on the current prototype. 
 
 Another feature we want to build out is the therapist dashboard. This would allow the therapist to have an overview of their clients, and be able to suggest modules for them to complete based on what they discussed in therapy. We already have a prototype for this dashboard, however we wish to build it out more extensively.
 
