@@ -1,4 +1,5 @@
 # MindGrove 
+[![MindGrove](https://img.youtube.com/vi/_b5A8Zbk8rA/0.jpg)](https://youtu.be/_b5A8Zbk8rA)
 
 ## Inspiration 
 
